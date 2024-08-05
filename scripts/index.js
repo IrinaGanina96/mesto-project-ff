@@ -12,9 +12,10 @@ const container = document.querySelector('.content');
 const placeContainer = container.querySelector('.places__list');
 const addButton = container.querySelector('.profile__add-button');
 
-initialCards.forEach(function(element) {
+initialCards.forEach(function addPlase(element, deleteCard) {
     const cardTemplate = document.querySelector('#card-template').content;
     const placeElement = cardTemplate.querySelector('.places__item').cloneNode(true);
+
     function deleteCard(evt) {
     evt.target.closest('.card').remove();
     };
@@ -24,9 +25,9 @@ initialCards.forEach(function(element) {
     placeElement.querySelector('.card__image').setAttribute('alt', element.name);
     
     const deleteButton = placeElement.querySelector('.card__delete-button');
-    deleteButton.addEventListener('click', deleteCard)
+    deleteButton.addEventListener('click', deleteCard);
     
-    placeContainer.append(placeElement)
+    placeContainer.append(placeElement);
     return placeElement;
 })
 
