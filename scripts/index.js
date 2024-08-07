@@ -22,7 +22,6 @@ function addPlase(element, deleteCard) {
 // @todo: Функция удаления карточки
 function deleteCard(evt) {
     evt.target.closest('.card').remove();
-    console.log('Я кликнул');
 }
 
 // @todo: Вывести карточки на страницу
