@@ -2,7 +2,7 @@
 const cardTemplate = document.querySelector('#card-template').content;
 
 // @todo: Функция создания карточки
-function addPlase(element, deleteCard, openPopupImage, liked)  {
+function createPlace(element, deleteCard, openPopupImage, likeCard)  {
     const placeElement = cardTemplate.cloneNode(true);
     const cardText = placeElement.querySelector('.card__title');
     const deleteButton = placeElement.querySelector('.card__delete-button');
@@ -14,11 +14,11 @@ function addPlase(element, deleteCard, openPopupImage, liked)  {
     cardImage.alt = element.name; 
 
     cardImage.addEventListener('click', function () {
-        openPopupImage(cardImage.src, cardText.textContent)
+        openPopupImage(element.link, element.name)
     });
     
     deleteButton.addEventListener('click', deleteCard);
-    like.addEventListener('click', liked);
+    like.addEventListener('click', likeCard);
 
     return placeElement;
 }
@@ -29,10 +29,10 @@ function deleteCard(evt) {
 }
 
 // @todo: Функция лайка
-function liked (evt) {
+function likeCard (evt) {
     if (evt.target.classList.contains('card__like-button')) {
         evt.target.classList.toggle('card__like-button_is-active');
     }
 }
 
-export {addPlase, deleteCard, liked}
+export {createPlace, deleteCard, likeCard}

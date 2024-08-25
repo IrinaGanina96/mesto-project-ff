@@ -1,6 +1,6 @@
 import './styles/index.css';
 import {initialCards} from './scripts/cards.js'
-import {addPlase, deleteCard, liked} from './scripts/card.js'
+import {createPlace, deleteCard, likeCard} from './scripts/card.js'
 import {openPopup, closePopup} from './scripts/modal.js'
 
 // @todo: DOM узлы
@@ -73,7 +73,7 @@ function handleCardSubmit(evt) {
     const plaseNameInput = plaseName.value
     const plaseImageImput = plaseImage.value
 
-    const newCard = addPlase ({name:plaseNameInput, link:plaseImageImput, alt:plaseNameInput}, deleteCard, openPopupImage, liked)
+    const newCard = createPlace ({name:plaseNameInput, link:plaseImageImput, alt:plaseNameInput}, deleteCard, openPopupImage, likeCard)
     placeContainer.prepend(newCard)
 
     closePopup (popupNewCard)
@@ -88,5 +88,5 @@ popups.forEach (function (popup) {
 
 // @todo: Вывести карточки на страницу
 initialCards.forEach(function(element) {
-    placeContainer.append(addPlase(element, deleteCard, openPopupImage, liked))
+    placeContainer.append(createPlace(element, deleteCard, openPopupImage, likeCard))
 });
