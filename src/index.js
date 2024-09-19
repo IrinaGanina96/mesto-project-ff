@@ -1,7 +1,9 @@
 import './styles/index.css';
 import {initialCards} from './scripts/cards.js'
-import {createPlace, deleteCard, likeCard} from './scripts/card.js'
+import {createPlace, onLikeIcon} from './scripts/card.js'
 import {openPopup, closePopup} from './scripts/modal.js'
+import {enableValidation, clearValidation} from './scripts/validation.js'
+import {getInitialCards, getUser, editProfile, addCard, changeAvatar, deleteCard} from './scripts/api.js'
 
 // @todo: DOM узлы
 const container = document.querySelector('.content');
@@ -11,30 +13,61 @@ const popupNewCardOpener = document.querySelector('.profile__add-button');
 const popupCloser = document.querySelectorAll('.popup__close');
 const popupProfile = document.querySelector('.popup_type_edit');
 const popupProfileOpener = document.querySelector('.profile__edit-button');
+const popupNewAvatar = document.querySelector('.popup_new_avatar');
+const popupNewAvatarOpener = document.querySelector('.profile__image');
 const popupImage = document.querySelector('.popup__image');
 const popupCaption = document.querySelector('.popup__caption');
 const popupImageOpener = document.querySelector('.popup_type_image');
-const formElement = document.querySelector('[name="edit-profile"]');
-const nameInput = formElement.querySelector('[name="name"]');
-const jobInput = formElement.querySelector('[name="description"]');
+const formProfile = document.querySelector('[name="edit-profile"]');
+const nameInput = formProfile.querySelector('[name="name"]');
+const jobInput = formProfile.querySelector('[name="description"]');
+const buttonFormProfile = formProfile.querySelector('.popup__button');
 const profileName = document.querySelector('.profile__title');
 const profileJob = document.querySelector('.profile__description');
 const formPlase = document.querySelector('[name="new-place"]');
 const plaseName = formPlase.querySelector('[name="place-name"]');
 const plaseImage = formPlase.querySelector('[name="link"]');
+const buttonFormPlase = formPlase.querySelector('.popup__button');
+const formAvatar = document.querySelector('[name="avatar"]');
+const avatarImage = formAvatar.querySelector('[name="link"]');
+const buttonFormAvatar = formAvatar.querySelector('.popup__button');
+const formDeleteCard = document.querySelector('[name="delete_card"]');
+const popupDeleteCard = document.querySelector('.popup_delete_card');
+const buttonFormDeleteCard = formDeleteCard.querySelector('.popup__button');
 const popups = document.querySelectorAll('.popup');
+const validationConfig = {
+    formSelector: '.popup__form',
+    inputSelector: '.popup__input',
+    submitButtonSelector: '.popup__button',
+    inactiveButtonClass: 'popup__button_disabled',
+    inputErrorClass: 'popup__input_type_error',
+    errorClass: 'popup__error_visible'
+  };
 
+let profile;
+let cardForDelete = {};
 
 popupNewCardOpener.addEventListener('click', function() {
     openPopup(popupNewCard)
+    // очистка ошибок валидации вызовом clearValidation
+    clearValidation(formPlase, validationConfig); 
     plaseName.value = ''
     plaseImage.value = ''
 });
 
 popupProfileOpener.addEventListener('click', function() {
     openPopup(popupProfile)
+    // очистка ошибок валидации вызовом clearValidation
+    clearValidation(formProfile, validationConfig);
     nameInput.value = profileName.textContent
     jobInput.value =  profileJob.textContent
+});
+
+popupNewAvatarOpener.addEventListener('click', function() {
+    openPopup(popupNewAvatar)
+    // очистка ошибок валидации вызовом clearValidation
+    clearValidation(formAvatar, validationConfig);
+    avatarImage.value = ""
 });
 
 popupCloser.forEach(function (button)  {
@@ -57,29 +90,99 @@ function openPopupImage (popupImageLink, popupImageName) {
 function handleFormSubmit(evt) {
     evt.preventDefault();
 
-    profileName.textContent = nameInput.value
-    profileJob.textContent = jobInput.value
-
-    closePopup (popupProfile)
+    loading (true)
+    
+    editProfile (nameInput, jobInput)
+    .then((result) => {
+        profileName.textContent = nameInput.value;
+        profileJob.textContent = jobInput.value;
+        closePopup (popupProfile);
+    })
+    .catch((err) => {
+        console.log('Ошибка:', err);
+    })
+    .finally(() => {
+        loading (false)
+    })
 }
 
-formElement.addEventListener('submit', handleFormSubmit); 
+formProfile.addEventListener('submit', handleFormSubmit); 
 
 
 // @todo: Функция добавления карточки
 function handleCardSubmit(evt) {
     evt.preventDefault();
+    loading (true)
+    
+    addCard (plaseName, plaseImage)
+    .then ((card) => {
+        const newCard = createPlace (card, profile, openPopupImage, onLikeIcon, handleDelete)
+        placeContainer.prepend(newCard)
 
-    const plaseNameInput = plaseName.value
-    const plaseImageImput = plaseImage.value
-
-    const newCard = createPlace ({name:plaseNameInput, link:plaseImageImput, alt:plaseNameInput}, deleteCard, openPopupImage, likeCard)
-    placeContainer.prepend(newCard)
-
-    closePopup (popupNewCard)
+        closePopup (popupNewCard)
+    })
+    .catch((err)=>{
+        console.log('Ошибка:', err);
+    }) 
+    .finally(() => {
+        loading (false)
+    })   
 }
 
 formPlase.addEventListener('submit', handleCardSubmit);
+
+// @todo: Функция смены аватарки
+function handleAvatarSubmit(evt) {
+    evt.preventDefault();
+
+    loading (true)
+    
+    changeAvatar (avatarImage)
+    .then (() => {
+        popupNewAvatarOpener.style.backgroundImage = `url(${avatarImage.value})`;
+        
+        closePopup (popupNewAvatar)
+    })
+    .catch((err)=>{
+        console.log('Ошибка:', err);
+    })    
+    .finally(() => {
+        loading (false)
+    })   
+}
+
+formAvatar.addEventListener('submit', handleAvatarSubmit);
+
+// @todo: Функция удаления карточки 
+const handleDelete = (cardId, cardElement) => {
+    cardForDelete = {
+        id: cardId,
+        cardElement
+      }
+    openPopup (popupDeleteCard)
+};
+
+function handleDeleteSubmit (evt) {
+    evt.preventDefault();
+    if (!cardForDelete.cardElement) return;
+    
+    loading (true)
+
+    deleteCard(cardForDelete.id)
+        .then(() => {
+            cardForDelete.cardElement.remove();
+            closePopup(popupDeleteCard);
+            cardForDelete = {};
+        })
+        .catch(err =>
+            console.log('Ошибка:', err)
+        ) 
+        .finally(() => {
+            loading (false)
+        }) 
+}
+
+formDeleteCard.addEventListener('submit', handleDeleteSubmit);
 
 // @todo: Плавное открытие и закрытие попапов
 popups.forEach (function (popup) {
@@ -87,6 +190,42 @@ popups.forEach (function (popup) {
   })
 
 // @todo: Вывести карточки на страницу
-initialCards.forEach(function(element) {
-    placeContainer.append(createPlace(element, deleteCard, openPopupImage, likeCard))
-});
+// initialCards.forEach(function(element) {
+//     placeContainer.append(createPlace(element, deleteCard, openPopupImage, likeCard))
+// });
+
+//включение валидации вызовом enableValidation
+enableValidation(validationConfig); 
+
+//уведомление пользователя о процессе загрузки
+function loading (load) {
+    if (load) {
+        buttonFormProfile.textContent = 'Сохранение...';   
+        buttonFormPlase.textContent = 'Сохранение...';
+        buttonFormAvatar.textContent = 'Сохранение...';
+        buttonFormDeleteCard.textContent = 'Удаление...';
+    }
+    else {
+        buttonFormProfile.textContent = 'Сохранить';   
+        buttonFormPlase.textContent = 'Сохранить';
+        buttonFormAvatar.textContent = 'Сохранить';
+        buttonFormDeleteCard.textContent = 'Да';
+    }
+}
+
+//для загрузки данных пользователя и карточек 
+Promise.all([getInitialCards(), getUser()])
+    .then (([cards, user]) => {
+        profile = user
+        profileName.textContent = user.name
+        profileJob.textContent = user.about
+        popupNewAvatarOpener.style.backgroundImage = `url(${user.avatar})`;
+
+        cards.forEach((card) => {
+            const newCard = createPlace(card, user, openPopupImage, onLikeIcon, handleDelete);
+            placeContainer.append(newCard)
+        })
+    })
+    .catch ((err) => {
+        console.log('Ошибка:', err);
+    })
