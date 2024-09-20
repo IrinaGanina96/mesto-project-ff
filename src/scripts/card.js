@@ -1,5 +1,4 @@
 import {changeLike} from './api.js'
-// import {handleDelete} from '../index.js';
 
 // @todo: Темплейт карточки
 const cardTemplate = document.querySelector('#card-template').content;
