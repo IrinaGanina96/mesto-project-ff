@@ -32,8 +32,8 @@ const handleResponse = (res) => {
       method: 'PATCH',
       headers: config.headers,
       body: JSON.stringify({
-        name: profileName.value,
-        about: profileAbout.value
+        name: profileName,
+        about: profileAbout
       })
     })
     .then(handleResponse);
@@ -44,8 +44,8 @@ const handleResponse = (res) => {
       method: 'POST',
       headers: config.headers,
       body: JSON.stringify({
-        name: plaseName.value,
-        link: plaseImage.value
+        name: plaseName,
+        link: plaseImage
       })
     })
     .then(handleResponse);
@@ -56,7 +56,7 @@ const handleResponse = (res) => {
       method: 'PATCH',
       headers: config.headers,
       body: JSON.stringify({
-        avatar: avatarImage.value
+        avatar: avatarImage
       })
     })
     .then(handleResponse);

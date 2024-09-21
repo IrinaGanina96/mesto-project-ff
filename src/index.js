@@ -10,7 +10,7 @@ const container = document.querySelector('.content');
 const placeContainer = container.querySelector('.places__list');
 const popupNewCard = document.querySelector('.popup_type_new-card');
 const popupNewCardOpener = document.querySelector('.profile__add-button');
-const popupCloser = document.querySelectorAll('.popup__close');
+const popupCloseButtons = document.querySelectorAll('.popup__close');
 const popupProfile = document.querySelector('.popup_type_edit');
 const popupProfileOpener = document.querySelector('.profile__edit-button');
 const popupNewAvatar = document.querySelector('.popup_new_avatar');
@@ -70,7 +70,7 @@ popupNewAvatarOpener.addEventListener('click', function() {
     avatarImage.value = ""
 });
 
-popupCloser.forEach(function (button)  {
+popupCloseButtons.forEach(function (button)  {
     button.addEventListener('click', function () {
         const popupElement = button.closest('.popup');
         closePopup(popupElement);
@@ -89,20 +89,22 @@ function openPopupImage (popupImageLink, popupImageName) {
 // @todo: Функция редактирования имени и информации
 function handleFormSubmit(evt) {
     evt.preventDefault();
+    const newName = nameInput.value
+    const newJob = jobInput.value
 
-    loading (true)
+    loading (buttonFormProfile, true)
     
-    editProfile (nameInput, jobInput)
-    .then((result) => {
-        profileName.textContent = nameInput.value;
-        profileJob.textContent = jobInput.value;
+    editProfile (newName, newJob)
+    .then(() => {
+        profileName.textContent = newName;
+        profileJob.textContent = newJob;
         closePopup (popupProfile);
     })
     .catch((err) => {
         console.log('Ошибка:', err);
     })
     .finally(() => {
-        loading (false)
+        loading (buttonFormProfile, false)
     })
 }
 
@@ -112,9 +114,11 @@ formProfile.addEventListener('submit', handleFormSubmit);
 // @todo: Функция добавления карточки
 function handleCardSubmit(evt) {
     evt.preventDefault();
-    loading (true)
-    
-    addCard (plaseName, plaseImage)
+    loading (buttonFormPlase, true)
+    const newNamePlase = plaseName.value
+    const newImagePlace = plaseImage.value
+
+    addCard (newNamePlase, newImagePlace)
     .then ((card) => {
         const newCard = createPlace (card, profile, openPopupImage, onLikeIcon, handleDelete)
         placeContainer.prepend(newCard)
@@ -125,7 +129,7 @@ function handleCardSubmit(evt) {
         console.log('Ошибка:', err);
     }) 
     .finally(() => {
-        loading (false)
+        loading (buttonFormPlase, false)
     })   
 }
 
@@ -134,12 +138,13 @@ formPlase.addEventListener('submit', handleCardSubmit);
 // @todo: Функция смены аватарки
 function handleAvatarSubmit(evt) {
     evt.preventDefault();
+    const newAvatar = avatarImage.value
 
-    loading (true)
+    loading (buttonFormAvatar, true)
     
-    changeAvatar (avatarImage)
+    changeAvatar (newAvatar)
     .then (() => {
-        popupNewAvatarOpener.style.backgroundImage = `url(${avatarImage.value})`;
+        popupNewAvatarOpener.style.backgroundImage = `url(${newAvatar})`;
         
         closePopup (popupNewAvatar)
     })
@@ -147,7 +152,7 @@ function handleAvatarSubmit(evt) {
         console.log('Ошибка:', err);
     })    
     .finally(() => {
-        loading (false)
+        loading (buttonFormAvatar, false)
     })   
 }
 
@@ -166,7 +171,7 @@ function handleDeleteSubmit (evt) {
     evt.preventDefault();
     if (!cardForDelete.cardElement) return;
     
-    loading (true)
+    loading (buttonFormDeleteCard, true, 'Удаление...', 'Да')
 
     deleteCard(cardForDelete.id)
         .then(() => {
@@ -178,7 +183,7 @@ function handleDeleteSubmit (evt) {
             console.log('Ошибка:', err)
         ) 
         .finally(() => {
-            loading (false)
+            loading (buttonFormDeleteCard, false, 'Удаление...', 'Да')
         }) 
 }
 
@@ -198,18 +203,13 @@ popups.forEach (function (popup) {
 enableValidation(validationConfig); 
 
 //уведомление пользователя о процессе загрузки
-function loading (load) {
+function loading (button, load, loadText = 'Сохранение...', defaultText = 'Сохранить') {
+
     if (load) {
-        buttonFormProfile.textContent = 'Сохранение...';   
-        buttonFormPlase.textContent = 'Сохранение...';
-        buttonFormAvatar.textContent = 'Сохранение...';
-        buttonFormDeleteCard.textContent = 'Удаление...';
+        button.textContent = loadText;   
     }
     else {
-        buttonFormProfile.textContent = 'Сохранить';   
-        buttonFormPlase.textContent = 'Сохранить';
-        buttonFormAvatar.textContent = 'Сохранить';
-        buttonFormDeleteCard.textContent = 'Да';
+        button.textContent = defaultText;   
     }
 }
 
